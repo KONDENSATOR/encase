@@ -1,0 +1,4 @@
+Installation
+
+curl https://raw.github.com/KONDENSATOR/encase/master/install | sudo ruby
+

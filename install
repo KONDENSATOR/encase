@@ -13,6 +13,8 @@ p = {
   :fetool     => which('fetool')  
 }
 
+puts "Starting encase installation.."
+
 # Prerequisites
 if ENV['USER'] != 'root'
   puts "Error, you need to run installation as root. Either with sudo or root account."
