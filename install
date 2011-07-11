@@ -67,7 +67,7 @@ if p[:realgrowl] == ""
   %x{sudo gem install real-growl}
 end
 
-if not Dir.exist?('/usr/libexec/encase')
+if not Dir.exists?('/usr/libexec/encase')
   puts "Downloading encase core project into '/usr/libexec/encase'"
   Dir.chdir('/usr/libexec')
   %{git clone git://github.com/KONDENSATOR/encase.git}
@@ -80,7 +80,7 @@ else
 end
 
 if p[:fetool] == ""
-  if not File.exist?('/usr/libexec/encase/fetool')
+  if not File.exists?('/usr/libexec/encase/fetool')
     puts "Downloading fseventer.zip from http://www.fernlightning.com/doku.php?id=software:fseventer:start"
     %{curl 'http://www.fernlightning.com/lib/exe/fetch.php?id=software%3Afseventer%3Astart&cache=cache&media=software:fseventer:fseventer.zip' -o fseventer.zip}
     puts "Unzipping fseventer.zip"
