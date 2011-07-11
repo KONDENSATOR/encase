@@ -1,0 +1,115 @@
+#!/usr/bin/env ruby
+
+def which(prg)
+  %x{which #{prg}}.strip
+end
+
+p = {
+  :sudo       => which('sudo'),
+  :realgrowl  => which('realgrowl'),
+  :git        => which('git'),
+  :ruby       => which('ruby'),
+  :env        => which('env'),
+  :fetool     => which('fetool')  
+}
+
+# Prerequisites
+if ENV['USER'] != 'root'
+  puts "Error, you need to run installation as root. Either with sudo or root account."
+  exit(255)
+end
+if p[:ruby] == ""
+  puts "Error, could not find Ruby installation"
+  puts "Install Ruby 1.8.7 or compatible"
+  exit(255)
+end
+if p[:env] == ""
+  puts "Error, could not find 'env'"
+end
+if p[:sudo] == ""
+  puts "Error, could not find 'sudo'"
+end
+
+def mktmp
+  Dir.mkdir "~/tmp-install"
+end
+def chtmp
+  Dir.chdir "~/tmp-install"
+end
+def rmtmp
+  %x{rm -R "~/tmp-install"}
+end
+
+# Create temporary directory
+
+if p[:git] == ""
+  puts "encase: Git is not installed, trying to install git 1.7.1"
+  puts "encase: Downloading git.."
+  %x{curl http://kernel.org/pub/software/scm/git/git-1.7.1.tar.gz -O}
+  puts "encase: Unpacking git"
+  %x{tar xzvf git-1.7.1.tar.gz}
+  Dir.chdir "git-1.7.1"
+  puts "encase: Configuring git build"
+  %x{make configure}
+  %x{./configure --prefix=/usr/local}
+  puts "encase: Building git"
+  %x{NO_MSGFMT=yes make prefix=/usr/local all}
+  puts "encase: Installing git build"
+  %x{sudo make install}
+  puts "encase: Finished installing git"
+end
+
+if p[:realgrowl] == ""
+  %x{hdid http://growl.cachefly.net/Growl-1.2.1-SDK.dmg}
+  %x{cp -r /Volumes/Growl\ 1.2.1\ SDK/Frameworks/Growl.framework /Library/Frameworks}
+  %x{sudo gem install real-growl}
+end
+
+if not Dir.exist?('/usr/libexec/encase')
+  puts "Downloading encase core project into '/usr/libexec/encase'"
+  Dir.chdir('/usr/libexec')
+  %{git clone git://github.com/KONDENSATOR/encase.git}
+  puts "Copying fetool into encase path"
+  %{cp "~/tmp-install/fseventer/fseventer.app/Contents/Resources/fetool" "/usr/libexec/encase"}
+  %{chmod +x fetool}
+else
+  Dir.chdir('/usr/libexec/encase')
+  %{git pull origin master}
+end
+
+if p[:fetool] == ""
+  if not File.exist?('/usr/libexec/encase/fetool')
+    puts "Downloading fseventer.zip from http://www.fernlightning.com/doku.php?id=software:fseventer:start"
+    %{curl 'http://www.fernlightning.com/lib/exe/fetch.php?id=software%3Afseventer%3Astart&cache=cache&media=software:fseventer:fseventer.zip' -o fseventer.zip}
+    puts "Unzipping fseventer.zip"
+    %{unzip fseventer.zip}
+    puts "Copying fetool from fseventer"
+    %{cp "fseventer/fseventer.app/Contents/Resources/fetool"}
+  else
+    p[:fetool] = "/usr/libexec/encase/fetool"
+  end
+end
+
+
+rmtmp
+
+plist = <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>se.kondensator.encase.events</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/libexec/encase/events</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+</dict>
+</plist>
+PLIST
+File.open('/Library/LaunchDaemons/se.kondensator.encase.events.plist', 'w') {|f| f.write(plist) }
+
+%x{sudo launchctl load '/Library/LaunchDaemons/se.kondensator.encase.events.plist'}
+%x{sudo launchctl start se.kondensator.encase.events}

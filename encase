@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+# Configure git per user
+# %x{git config --global user.name "My name"}
+# %x{git config --global user.email "myname@kondensator.se"}
+# %x{git config --global --list}
+# %x{git config --global color.ui "auto"}
