@@ -67,7 +67,7 @@ if p[:realgrowl] == ""
   %x{sudo gem install real-growl}
 end
 
-if not Dir.exists?('/usr/libexec/encase')
+if not File.exists?('/usr/libexec/encase')
   puts "Downloading encase core project into '/usr/libexec/encase'"
   Dir.chdir('/usr/libexec')
   %{git clone git://github.com/KONDENSATOR/encase.git}
